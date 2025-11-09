@@ -83,8 +83,9 @@ const Notification = forwardRef<HTMLDivElement, React.PropsWithChildren<Notifica
           transition: 150ms opacity ease;
           color: #fff;
           font-size: 12px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-            'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+          font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+            'Droid Sans', 'Helvetica Neue', sans-serif;
         }
 
         .notification_dismissLink {

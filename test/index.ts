@@ -45,7 +45,7 @@ test.after(async () => {
     )
     .then((img) => Buffer.from(img || '', 'base64'))
     .then(async (imageBuffer) => {
-      await fs.writeFile(`dist/tmp/${process.platform}_test.png`, imageBuffer);
+      await fs.writeFile(`dist/tmp/${process.platform}_test.png`, imageBuffer as unknown as Uint8Array);
     });
   await app.close();
 });

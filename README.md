@@ -74,10 +74,11 @@ Regardless of the platform you are working on, you will need to have Yarn instal
         + `icnsutils`
         + `xz-utils`
 2. [Fork](https://help.github.com/articles/fork-a-repo/) this repository to your own GitHub account and then [clone](https://help.github.com/articles/cloning-a-repository/) it to your local device
-3. Install the dependencies: `yarn`
+3. Install the dependencies: `yarn` (si tu red es lenta: `yarn install --network-timeout 300000`)
 4. Build the code and watch for changes: `yarn run dev`
 5. To run `hyper`
-  * `yarn run app` from another terminal tab/window/pane
+  * `yarn run app` (por defecto omite devtools para evitar fallos en redes corporativas)
+  * Si quieres habilitar devtools: `yarn run app:with-devtools`
   * If you are using **Visual Studio Code**, select `Launch Hyper` in debugger configuration to launch a new Hyper instance with debugger attached.
   * If you interrupt `yarn run dev`, you'll need to relaunch it each time you want to test something. Webpack will watch changes and will rebuild renderer code when needed (and only what have changed). You'll just have to relaunch electron by using yarn run app or VSCode launch task.
 
@@ -95,6 +96,11 @@ After that, you will see the binary in the `./dist` folder!
 
 If after building during development you get an alert dialog related to `node-pty` issues,
 make sure its build process is working correctly by running `yarn run rebuild-node-pty`.
+
+On Windows, asegúrate de:
+  - Tener Python 3.10–3.12 con `setuptools` y `wheel` (`python -m pip install --user setuptools wheel`)
+  - Tener instaladas las C++ Build Tools (Visual Studio Build Tools)
+  - Evitar rutas con espacios (e.g. `Nueva carpeta`) si el rebuild falla
 
 If you are on macOS, this typically is related to Xcode issues (like not having agreed
 to the Terms of Service by running `sudo xcodebuild` after a fresh Xcode installation).

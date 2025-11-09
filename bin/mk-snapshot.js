@@ -42,10 +42,28 @@ async function main() {
   }
 
   console.log(`Generating startup blob in "${outputBlobPath}"`);
-  childProcess.execFileSync(
-    path.resolve(__dirname, '..', 'node_modules', '.bin', 'mksnapshot' + (process.platform === 'win32' ? '.cmd' : '')),
-    [snapshotScriptPath, '--output_dir', outputBlobPath]
+  // Prefer calling the Windows executable directly to avoid issues with spaces in paths
+  const isWin = process.platform === 'win32';
+  const mksnapshotCmdPath = path.resolve(
+    __dirname,
+    '..',
+    'node_modules',
+    '.bin',
+    'mksnapshot' + (isWin ? '.cmd' : '')
   );
+  const mksnapshotJsPath = path.resolve(
+    __dirname,
+    '..',
+    'node_modules',
+    'electron-mksnapshot',
+    'mksnapshot.js'
+  );
+  if (isWin) {
+    // Call the JS wrapper through Node to avoid .cmd quirks with spaces in paths
+    childProcess.execFileSync(process.execPath, [mksnapshotJsPath, snapshotScriptPath, '--output_dir', outputBlobPath]);
+  } else {
+    childProcess.execFileSync(mksnapshotCmdPath, [snapshotScriptPath, '--output_dir', outputBlobPath]);
+  }
 }
 
 main().catch((err) => console.error(err));

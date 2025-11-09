@@ -78,14 +78,23 @@ async function installDevExtensions(isDev_: boolean) {
   if (!isDev_) {
     return [];
   }
-  const {default: installer, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} = await import('electron-devtools-installer');
+  if (process.env.SKIP_DEVTOOLS === '1') {
+    console.warn('SKIP_DEVTOOLS=1: skipping devtools extensions installation');
+    return [];
+  }
+  try {
+    const {default: installer, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} = await import('electron-devtools-installer');
 
-  const extensions = [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS];
-  const forceDownload = Boolean(process.env.UPGRADE_EXTENSIONS);
+    const extensions = [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS];
+    const forceDownload = Boolean(process.env.UPGRADE_EXTENSIONS);
 
-  return Promise.all(
-    extensions.map((extension) => installer(extension, {forceDownload, loadExtensionOptions: {allowFileAccess: true}}))
-  );
+    return await Promise.all(
+      extensions.map((extension) => installer(extension, {forceDownload, loadExtensionOptions: {allowFileAccess: true}}))
+    );
+  } catch (err: any) {
+    console.warn('Devtools extensions could not be loaded:', err?.message ?? err);
+    return [];
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -209,7 +218,7 @@ app.on('ready', () =>
       }
     })
     .catch((err) => {
-      console.error('Error while loading devtools extensions', err);
+      console.warn('Devtools extensions not loaded:', err?.message ?? err);
     })
 );
 

@@ -164,7 +164,10 @@ export default class Session extends EventEmitter {
         throw createNodePtyError();
       }
       // Fallback: if conpty native module is missing on Windows, retry using winpty
-      const maybeConptyMissing = /conpty\.node/i.test(err.message) || /Cannot find module .*conpty\.node/i.test(err.message) || err.code === 'MODULE_NOT_FOUND';
+      const maybeConptyMissing =
+        /conpty\.node/i.test(err.message) ||
+        /Cannot find module .*conpty\.node/i.test(err.message) ||
+        err.code === 'MODULE_NOT_FOUND';
       if (process.platform === 'win32' && typeof useConpty !== 'boolean' && maybeConptyMissing) {
         const retryOptions = {...options, useConpty: false};
         console.warn('conpty.node missing; retrying node-pty spawn with useConpty=false');

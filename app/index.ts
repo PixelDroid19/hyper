@@ -89,7 +89,12 @@ async function installDevExtensions(isDev_: boolean) {
     const forceDownload = Boolean(process.env.UPGRADE_EXTENSIONS);
 
     return await Promise.all(
-      extensions.map((extension) => installer(extension, {forceDownload, loadExtensionOptions: {allowFileAccess: true}}))
+      extensions.map((extension) =>
+        installer(extension, {
+          forceDownload,
+          loadExtensionOptions: {allowFileAccess: true}
+        })
+      )
     );
   } catch (err: any) {
     console.warn('Devtools extensions could not be loaded:', err?.message ?? err);

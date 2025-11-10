@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
+
 import {createRoot} from 'react-dom/client';
 
 import type {rawConfig} from '../typings/config';
@@ -14,7 +15,7 @@ const Preferences: React.FC = () => {
   const liveApplyTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    loadConfig();
+    void loadConfig();
   }, []);
 
   const loadConfig = async () => {
@@ -47,12 +48,14 @@ const Preferences: React.FC = () => {
     if (liveApplyTimerRef.current) {
       window.clearTimeout(liveApplyTimerRef.current);
     }
-    liveApplyTimerRef.current = window.setTimeout(async () => {
-      try {
-        await ipcRenderer.invoke('applyLiveRawConfig', config);
-      } catch (e) {
-        console.error('Error aplicando configuración en vivo:', e);
-      }
+    liveApplyTimerRef.current = window.setTimeout(() => {
+      void (async () => {
+        try {
+          await ipcRenderer.invoke('applyLiveRawConfig', config);
+        } catch (e) {
+          console.error('Error aplicando configuración en vivo:', e);
+        }
+      })();
     }, 400);
 
     return () => {
@@ -72,7 +75,9 @@ const Preferences: React.FC = () => {
         // Cerrar la ventana después de guardar
         setTimeout(() => {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const {remote} = require('@electron/remote');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             remote.getCurrentWindow().close();
           } catch (e) {
             // Fallback si remote no está disponible
@@ -361,10 +366,12 @@ const Preferences: React.FC = () => {
                   <input
                     type="color"
                     style={styles.colorInput}
-                    value={cfg.cursorColor?.replace(/rgba?\([^)]+\)/, (match) => {
-                      // Convertir rgba a hex aproximado
-                      return '#f81ce5';
-                    }) || '#f81ce5'}
+                    value={
+                      cfg.cursorColor?.replace(/rgba?\([^)]+\)/, () => {
+                        // Convertir rgba a hex aproximado
+                        return '#f81ce5';
+                      }) || '#f81ce5'
+                    }
                     onChange={(e) => updateConfig(['config', 'cursorColor'], e.target.value)}
                   />
                   <input
@@ -463,9 +470,7 @@ const Preferences: React.FC = () => {
                   }}
                   placeholder="--login"
                 />
-                <div style={styles.helpText}>
-                  Separar argumentos con espacios
-                </div>
+                <div style={styles.helpText}>Separar argumentos con espacios</div>
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Directorio de trabajo</label>
@@ -494,33 +499,34 @@ const Preferences: React.FC = () => {
           {activeTab === 'colores' && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Colores</h2>
-              {cfg.colors && Object.entries(cfg.colors).map(([name, color]) => (
-                <div key={name} style={styles.formGroup}>
-                  <label style={styles.label}>{name}</label>
-                  <div style={styles.colorInputGroup}>
-                    <input
-                      type="color"
-                      style={styles.colorInput}
-                      value={color || '#000000'}
-                      onChange={(e) => {
-                        const newColors = {...cfg.colors};
-                        newColors[name as keyof typeof newColors] = e.target.value;
-                        updateConfig(['config', 'colors'], newColors);
-                      }}
-                    />
-                    <input
-                      type="text"
-                      style={styles.input}
-                      value={color || ''}
-                      onChange={(e) => {
-                        const newColors = {...cfg.colors};
-                        newColors[name as keyof typeof newColors] = e.target.value;
-                        updateConfig(['config', 'colors'], newColors);
-                      }}
-                    />
+              {cfg.colors &&
+                Object.entries(cfg.colors).map(([name, color]) => (
+                  <div key={name} style={styles.formGroup}>
+                    <label style={styles.label}>{name}</label>
+                    <div style={styles.colorInputGroup}>
+                      <input
+                        type="color"
+                        style={styles.colorInput}
+                        value={color || '#000000'}
+                        onChange={(e) => {
+                          const newColors = {...cfg.colors};
+                          newColors[name as keyof typeof newColors] = e.target.value;
+                          updateConfig(['config', 'colors'], newColors);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        style={styles.input}
+                        value={color || ''}
+                        onChange={(e) => {
+                          const newColors = {...cfg.colors};
+                          newColors[name as keyof typeof newColors] = e.target.value;
+                          updateConfig(['config', 'colors'], newColors);
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
 
@@ -539,9 +545,7 @@ const Preferences: React.FC = () => {
                   placeholder="hyperpower&#10;hyper-material-theme"
                   rows={10}
                 />
-                <div style={styles.helpText}>
-                  Un plugin por línea. Ejemplo: hyperpower o @org/plugin
-                </div>
+                <div style={styles.helpText}>Un plugin por línea. Ejemplo: hyperpower o @org/plugin</div>
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Plugins locales</label>
@@ -555,9 +559,7 @@ const Preferences: React.FC = () => {
                   placeholder="local-plugin"
                   rows={5}
                 />
-                <div style={styles.helpText}>
-                  Plugins locales de desarrollo
-                </div>
+                <div style={styles.helpText}>Plugins locales de desarrollo</div>
               </div>
             </div>
           )}
@@ -565,18 +567,23 @@ const Preferences: React.FC = () => {
       </div>
 
       <div style={styles.footer}>
-        <button style={styles.cancelButton} onClick={() => {
-          try {
-            const {remote} = require('@electron/remote');
-            remote.getCurrentWindow().close();
-          } catch (e) {
-            // Fallback si remote no está disponible
-            window.close();
-          }
-        }}>
+        <button
+          style={styles.cancelButton}
+          onClick={() => {
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-var-requires
+              const {remote} = require('@electron/remote');
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+              remote.getCurrentWindow().close();
+            } catch (e) {
+              // Fallback si remote no está disponible
+              window.close();
+            }
+          }}
+        >
           Cancelar
         </button>
-        <button style={styles.saveButton} onClick={saveConfig} disabled={saving}>
+        <button style={styles.saveButton} onClick={() => void saveConfig()} disabled={saving}>
           {saving ? 'Guardando...' : 'Guardar'}
         </button>
       </div>
@@ -773,4 +780,3 @@ try {
     </div>
   `;
 }
-

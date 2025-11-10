@@ -1,7 +1,7 @@
 import {app, Menu} from 'electron';
 import type {BrowserWindow} from 'electron';
 
-import {openConfig, getConfig} from './config';
+import {getConfig} from './config';
 import {updatePlugins} from './plugins';
 import {createPreferencesWindow} from './ui/preferences-window';
 import {installCLI} from './utils/cli-install';

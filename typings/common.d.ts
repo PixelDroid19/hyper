@@ -4,7 +4,7 @@ import type {IpcMain, IpcRenderer} from 'electron';
 
 import type parseUrl from 'parse-url';
 
-import type {configOptions} from './config';
+import type {configOptions, rawConfig} from './config';
 
 export type Session = {
   uid: string;
@@ -108,8 +108,6 @@ export interface TypedEmitter<Events> {
 }
 
 type OptionalPromise<T> = T | Promise<T>;
-
-import type {rawConfig} from './config';
 
 export type IpcCommands = {
   'child_process.exec': (command: string, options: ExecOptions) => {stdout: string; stderr: string};

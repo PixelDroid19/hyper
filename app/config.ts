@@ -5,9 +5,9 @@ import chokidar from 'chokidar';
 import type {parsedConfig, configOptions, rawConfig} from '../typings/config';
 
 import {_import, getDefaultConfig} from './config/import';
+import {_write} from './config/migrate';
 import _openConfig from './config/open';
 import {cfgPath, cfgDir} from './config/paths';
-import {_write} from './config/migrate';
 import notify from './notify';
 import {getColorMap} from './utils/colors';
 
@@ -133,11 +133,14 @@ export const getRawConfig = (): rawConfig => {
     config: cfg.config,
     plugins: cfg.plugins,
     localPlugins: cfg.localPlugins,
-    keymaps: Object.keys(cfg.keymaps).reduce((acc, key) => {
-      const value = cfg.keymaps[key];
-      acc[key] = value.length === 1 ? value[0] : value;
-      return acc;
-    }, {} as Record<string, string | string[]>)
+    keymaps: Object.keys(cfg.keymaps).reduce(
+      (acc, key) => {
+        const value = cfg.keymaps[key];
+        acc[key] = value.length === 1 ? value[0] : value;
+        return acc;
+      },
+      {} as Record<string, string | string[]>
+    )
   };
 };
 
@@ -146,7 +149,9 @@ export const saveRawConfig = (rawCfg: rawConfig): boolean => {
   try {
     // Temporarily disable watcher to avoid reload loop
     if (_watcher) {
-      _watcher.close();
+      void _watcher.close().catch((err) => {
+        console.warn(err);
+      });
       _watcher = null as any;
     }
 

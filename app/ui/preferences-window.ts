@@ -62,4 +62,3 @@ export function createPreferencesWindow(): BrowserWindow {
 export function getPreferencesWindow(): BrowserWindow | null {
   return preferencesWindow;
 }
-

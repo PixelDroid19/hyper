@@ -478,3 +478,6 @@ ipcMain.handle('getBasePaths', () => getBasePaths());
 ipcMain.handle('getDeprecatedConfig', () => getDeprecatedConfig());
 ipcMain.handle('getDecoratedConfig', (e, profile) => getDecoratedConfig(profile));
 ipcMain.handle('getDecoratedKeymaps', () => getDecoratedKeymaps());
+ipcMain.handle('getRawConfig', () => config.getRawConfig());
+ipcMain.handle('saveRawConfig', (e, rawCfg) => config.saveRawConfig(rawCfg));
+ipcMain.handle('applyLiveRawConfig', (e, rawCfg) => config.applyLiveRawConfig(rawCfg));

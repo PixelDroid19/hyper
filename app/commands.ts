@@ -3,6 +3,7 @@ import type {BrowserWindow} from 'electron';
 
 import {openConfig, getConfig} from './config';
 import {updatePlugins} from './plugins';
+import {createPreferencesWindow} from './ui/preferences-window';
 import {installCLI} from './utils/cli-install';
 import * as systemContextMenu from './utils/system-context-menu';
 
@@ -28,7 +29,7 @@ const commands: Record<string, (focusedWindow?: BrowserWindow) => void> = {
     focusedWindow?.rpc.emit('termgroup close req');
   },
   'window:preferences': () => {
-    void openConfig();
+    createPreferencesWindow();
   },
   'editor:clearBuffer': (focusedWindow) => {
     focusedWindow?.rpc.emit('session clear req');

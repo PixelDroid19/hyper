@@ -2,17 +2,19 @@ import {app} from 'electron';
 
 import chokidar from 'chokidar';
 
-import type {parsedConfig, configOptions} from '../typings/config';
+import type {parsedConfig, configOptions, rawConfig} from '../typings/config';
 
 import {_import, getDefaultConfig} from './config/import';
 import _openConfig from './config/open';
 import {cfgPath, cfgDir} from './config/paths';
+import {_write} from './config/migrate';
 import notify from './notify';
 import {getColorMap} from './utils/colors';
 
 const watchers: Function[] = [];
 let cfg: parsedConfig = {} as any;
 let _watcher: chokidar.FSWatcher;
+let suppressNextNotify = false;
 
 export const getDeprecatedCSS = (config: configOptions) => {
   const deprecated: string[] = [];
@@ -46,7 +48,10 @@ const _watch = () => {
     // Need to wait 100ms to ensure that write is complete
     setTimeout(() => {
       cfg = _import();
-      notify('Configuration updated', 'Hyper configuration reloaded!');
+      if (!suppressNextNotify) {
+        notify('Configuration updated', 'Hyper configuration reloaded!');
+      }
+      suppressNextNotify = false;
       watchers.forEach((fn) => {
         fn();
       });
@@ -120,6 +125,67 @@ export const getPlugins = (): {plugins: string[]; localPlugins: string[]} => {
 
 export const getKeymaps = () => {
   return cfg.keymaps;
+};
+
+// Get the full raw config (for preferences GUI)
+export const getRawConfig = (): rawConfig => {
+  return {
+    config: cfg.config,
+    plugins: cfg.plugins,
+    localPlugins: cfg.localPlugins,
+    keymaps: Object.keys(cfg.keymaps).reduce((acc, key) => {
+      const value = cfg.keymaps[key];
+      acc[key] = value.length === 1 ? value[0] : value;
+      return acc;
+    }, {} as Record<string, string | string[]>)
+  };
+};
+
+// Save the full raw config (for preferences GUI)
+export const saveRawConfig = (rawCfg: rawConfig): boolean => {
+  try {
+    // Temporarily disable watcher to avoid reload loop
+    if (_watcher) {
+      _watcher.close();
+      _watcher = null as any;
+    }
+
+    // Write the config file
+    const configString = JSON.stringify(rawCfg, null, 2);
+    _write(cfgPath, configString);
+
+    // Reload config
+    cfg = _import();
+
+    // Re-enable watcher
+    _watch();
+
+    notify('Configuración guardada', 'Los cambios se aplicarán en nuevas ventanas');
+    return true;
+  } catch (error) {
+    console.error('Error saving config:', error);
+    notify('Error', 'No se pudo guardar la configuración');
+    // Re-enable watcher even on error
+    _watch();
+    return false;
+  }
+};
+
+// Apply raw config immediately (live), without closing the watcher.
+// Triggers a config reload and updates existing windows in vivo.
+export const applyLiveRawConfig = (rawCfg: rawConfig): boolean => {
+  try {
+    // Suppress the generic notification for this live update
+    suppressNextNotify = true;
+    const configString = JSON.stringify(rawCfg, null, 2);
+    _write(cfgPath, configString);
+    return true;
+  } catch (error) {
+    console.error('Error applying live config:', error);
+    suppressNextNotify = false;
+    notify('Error', 'No se pudo aplicar la configuración en vivo');
+    return false;
+  }
 };
 
 export const setup = () => {

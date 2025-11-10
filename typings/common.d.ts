@@ -109,6 +109,8 @@ export interface TypedEmitter<Events> {
 
 type OptionalPromise<T> = T | Promise<T>;
 
+import type {rawConfig} from './config';
+
 export type IpcCommands = {
   'child_process.exec': (command: string, options: ExecOptions) => {stdout: string; stderr: string};
   'child_process.execFile': (
@@ -125,6 +127,9 @@ export type IpcCommands = {
   getDeprecatedConfig: () => Record<string, {css: string[]}>;
   getDecoratedConfig: (profile: string) => configOptions;
   getDecoratedKeymaps: () => Record<string, string[]>;
+  getRawConfig: () => rawConfig;
+  saveRawConfig: (config: rawConfig) => boolean;
+  applyLiveRawConfig: (config: rawConfig) => boolean;
 };
 
 export interface IpcMainWithCommands extends IpcMain {

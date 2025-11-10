@@ -154,6 +154,55 @@ const config: webpack.Configuration[] = [
   },
   {
     mode: 'none',
+    name: 'preferences',
+    resolve: {
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts']
+    },
+    devtool: isProd ? 'hidden-source-map' : 'cheap-module-source-map',
+    entry: './lib/preferences.tsx',
+    output: {
+      path: path.join(__dirname, 'target', 'renderer'),
+      filename: 'preferences-bundle.js'
+    },
+    module: {
+      rules: [
+        {
+          test: /\.(js|jsx|ts|tsx)$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader'
+        },
+        {
+          test: /\.json/,
+          loader: 'json-loader'
+        },
+        {
+          test: /\.css$/,
+          use: ['style-loader', 'css-loader']
+        }
+      ]
+    },
+    externals: {
+      react: 'require("./node_modules/react/index.js")',
+      'react-dom': 'require("./node_modules/react-dom/index.js")',
+      electron: 'require("electron")',
+      '@electron/remote': 'require("@electron/remote")'
+    },
+    plugins: [
+      new webpack.IgnorePlugin({resourceRegExp: /.*\.js.map$/i}),
+      new webpack.DefinePlugin({
+        'process.env': {
+          NODE_ENV: JSON.stringify(nodeEnv)
+        }
+      })
+    ],
+    optimization: {
+      minimize: isProd ? true : false,
+      minimizer: [new TerserPlugin()]
+    },
+    target: 'electron-renderer'
+  },
+  {
+    mode: 'none',
     name: 'hyper-cli',
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
